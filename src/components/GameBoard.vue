@@ -7,6 +7,7 @@
     <div class="game">
       <div class="game-player-one">
         <h2>{{players[0].name}}</h2>
+        <h3>Score : {{players[0].score}}</h3>
         <ul class="game-palette">
           <li
             @click="onHandClick(0, i)"
@@ -29,6 +30,7 @@
       </div>
       <div class="game-player-two">
         <h2>{{players[1].name}}</h2>
+        <h3>Score : {{players[1].score}}</h3>
         <ul class="game-palette">
           <li
             @click="onHandClick(1, i)"
@@ -190,11 +192,13 @@ export default {
     players: [
       {
         name: "Player 1",
-        hand: []
+        hand: [],
+        score: 0
       },
       {
         name: "Player 2",
-        hand: []
+        hand: [],
+        score: 0
       }
     ],
     currentPlayer: null,
@@ -230,12 +234,14 @@ export default {
       return (
         (selectedCells.every(
           (cell, j, arr) =>
-            (j == 0 || arr[j - 1].j == cell.j - 1) &&
+            (j == 0 ||
+              this.board[cell.i][cell.j - 1].content != EMPTY_CELL) &&
             cell.i == selectedCells[0].i
         ) ||
           selectedCells.every(
             (cell, i, arr) =>
-              (i == 0 || arr[i - 1].i == cell.i - 1) &&
+              (i == 0 ||
+                this.board[cell.i - 1][cell.j].content != EMPTY_CELL) &&
               cell.j == selectedCells[0].j
           )) &&
         selectedCells.some(cell => this.hasAdjacentCell(cell))
@@ -249,15 +255,21 @@ export default {
           if (cell.selected && cell.content != EMPTY_CELL) {
             cell.isLocked = true;
             cell.selected = false;
+            this.currentPlayer.score +=
+              LETTERS_DESTRIBUTION[cell.content].score;
           }
-          this.currentPlayer =
-            this.currentPlayer == this.players[0]
-              ? this.players[1]
-              : this.players[0];
         });
+        this.nextTurn();
+        this.fillHands();
       } else {
         this.cancel();
       }
+    },
+    nextTurn() {
+      this.currentPlayer =
+        this.currentPlayer == this.players[0]
+          ? this.players[1]
+          : this.players[0];
     },
     cancel() {
       this.selectedCell = null;
@@ -315,15 +327,18 @@ export default {
         );
       }
       this.lettersDeck = _.shuffle(this.lettersDeck);
+    },
+    fillHands() {
+      for (let player of this.players) {
+        while (player.hand.length < 7) player.hand.push(this.lettersDeck.pop());
+      }
     }
   },
   beforeMount() {
     this.currentPlayer = this.players[0];
     this.initGameBoard();
     this.generateLettersDeck();
-    for (let player of this.players) {
-      for (let i = 0; i < 7; i++) player.hand.push(this.lettersDeck.pop());
-    }
+    this.fillHands();
     this.cancel();
     this.board[7][7].content = "H";
     this.board[7][7].isLocked = true;
