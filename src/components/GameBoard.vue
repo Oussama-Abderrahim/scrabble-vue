@@ -1,6 +1,9 @@
 <template>
   <div class="container">
-    <div class="score-row"></div>
+    <div class="score-row">
+      <h1>SCRABBLE</h1>
+      <h3>{{currentPlayer.name}}'s turn</h3>
+    </div>
     <div class="game">
       <div class="game-player-one">
         <h2>{{players[0].name}}</h2>
@@ -42,21 +45,156 @@
 </template>
 
 <script>
+import _ from "lodash";
 const EMPTY_CELL = " ";
+
+const LETTERS_DESTRIBUTION = {
+  A: {
+    count: 9,
+    score: 1,
+    letter: "A"
+  },
+  B: {
+    count: 2,
+    score: 3,
+    letter: "B"
+  },
+  C: {
+    count: 2,
+    score: 3,
+    letter: "C"
+  },
+  D: {
+    count: 4,
+    score: 2,
+    letter: "D"
+  },
+  E: {
+    count: 12,
+    score: 1,
+    letter: "E"
+  },
+  F: {
+    count: 2,
+    score: 4,
+    letter: "F"
+  },
+  G: {
+    count: 3,
+    score: 2,
+    letter: "G"
+  },
+  H: {
+    count: 2,
+    score: 4,
+    letter: "H"
+  },
+  I: {
+    count: 9,
+    score: 1,
+    letter: "I"
+  },
+  J: {
+    count: 1,
+    score: 10,
+    letter: "J"
+  },
+  K: {
+    count: 1,
+    score: 5,
+    letter: "K"
+  },
+  L: {
+    count: 4,
+    score: 1,
+    letter: "L"
+  },
+  M: {
+    count: 2,
+    score: 3,
+    letter: "M"
+  },
+  N: {
+    count: 6,
+    score: 1,
+    letter: "N"
+  },
+  O: {
+    count: 8,
+    score: 1,
+    letter: "O"
+  },
+  P: {
+    count: 2,
+    score: 3,
+    letter: "P"
+  },
+  Q: {
+    count: 1,
+    score: 10,
+    letter: "Q"
+  },
+  R: {
+    count: 6,
+    score: 1,
+    letter: "R"
+  },
+  S: {
+    count: 4,
+    score: 1,
+    letter: "S"
+  },
+  T: {
+    count: 6,
+    score: 1,
+    letter: "T"
+  },
+  U: {
+    count: 4,
+    score: 1,
+    letter: "U"
+  },
+  V: {
+    count: 2,
+    score: 4,
+    letter: "V"
+  },
+  W: {
+    count: 2,
+    score: 4,
+    letter: "W"
+  },
+  X: {
+    count: 1,
+    score: 8,
+    letter: "X"
+  },
+  Y: {
+    count: 2,
+    score: 4,
+    letter: "Y"
+  },
+  Z: {
+    count: 1,
+    score: 10,
+    letter: "Z"
+  }
+};
 
 export default {
   name: "GameBoard",
   data: () => ({
     board: [],
+    lettersDeck: [],
     waiting: false,
     players: [
       {
         name: "Player 1",
-        hand: ["A", "B", "C", "D", "E", "F", "G"]
+        hand: []
       },
       {
         name: "Player 2",
-        hand: ["A", "B", "C", "D", "E", "F", "G"]
+        hand: []
       }
     ],
     currentPlayer: null,
@@ -112,6 +250,10 @@ export default {
             cell.isLocked = true;
             cell.selected = false;
           }
+          this.currentPlayer =
+            this.currentPlayer == this.players[0]
+              ? this.players[1]
+              : this.players[0];
         });
       } else {
         this.cancel();
@@ -146,23 +288,42 @@ export default {
       this.selectedCell = this.board[i][j];
       this.selectedCell.selected = true;
       this.waiting = true;
+    },
+    initGameBoard() {
+      this.board = Array(15)
+        .fill([])
+        .map((row, i) =>
+          Array(15)
+            .fill({})
+            .map((col, j) => ({
+              i: i,
+              j: j,
+              content: EMPTY_CELL,
+              isLocked: false,
+              selected: false
+            }))
+        );
+    },
+    generateLettersDeck() {
+      this.lettersDeck = [];
+      console.log(LETTERS_DESTRIBUTION);
+      for (let letter in LETTERS_DESTRIBUTION) {
+        this.lettersDeck = this.lettersDeck.concat(
+          Array(LETTERS_DESTRIBUTION[letter].count)
+            .fill(" ")
+            .map(l => LETTERS_DESTRIBUTION[letter].letter)
+        );
+      }
+      this.lettersDeck = _.shuffle(this.lettersDeck);
     }
   },
-  mounted() {
+  beforeMount() {
     this.currentPlayer = this.players[0];
-    this.board = Array(15)
-      .fill([])
-      .map((row, i) =>
-        Array(15)
-          .fill({})
-          .map((col, j) => ({
-            i: i,
-            j: j,
-            content: EMPTY_CELL,
-            isLocked: false,
-            selected: false
-          }))
-      );
+    this.initGameBoard();
+    this.generateLettersDeck();
+    for (let player of this.players) {
+      for (let i = 0; i < 7; i++) player.hand.push(this.lettersDeck.pop());
+    }
     this.cancel();
     this.board[7][7].content = "H";
     this.board[7][7].isLocked = true;
@@ -176,10 +337,13 @@ $primary-color: #27ae60;
 $cell-size: 24px;
 
 .container {
+  padding: 0;
   width: 100%;
+  height: 100%;
   text-align: center;
   // max-width: 500px;
-  border: 1px solid black;
+}
+.score-row {
 }
 
 .game {
@@ -193,10 +357,19 @@ $cell-size: 24px;
 
   &-palette {
     list-style-type: none;
-
+    display: flex;
     li {
       display: block;
     }
+  }
+
+  &-player-one,
+  &-player-two {
+    display: flex;
+    flex-direction: column;
+    margin: auto;
+    width: 300px;
+    text-align: center;
   }
 
   &-board {
@@ -230,12 +403,6 @@ $cell-size: 24px;
       margin: 0px;
       border: 2px solid red;
     }
-  }
-
-  &-player-one,
-  &-player-two {
-    width: 300px;
-    text-align: center;
   }
 }
 </style>
