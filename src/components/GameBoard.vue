@@ -66,13 +66,19 @@ export default {
     applyToBoard(f) {
       this.board.forEach(v => v.forEach(f));
     },
-    isSurrounded(cell) {
-
+    hasAdjacentCell(cell) {
       // Up
-      // Down
-      // Left
-      // Right
-
+      return (
+        (cell.i > 0 && this.board[cell.i - 1][cell.j].isLocked) ||
+        // Down
+        (cell.i < this.board.length - 1 &&
+          this.board[cell.i + 1][cell.j].isLocked) ||
+        // Left
+        (cell.j > 0 && this.board[cell.i][cell.j - 1].isLocked) ||
+        // Right
+        (cell.j < this.board[cell.i].length - 1 &&
+          this.board[cell.i][cell.j + 1].isLocked)
+      );
     },
     isSelectedCellsAligned() {
       var selectedCells = [];
@@ -84,9 +90,17 @@ export default {
       });
 
       return (
-        (selectedCells.every(cell => cell.i == selectedCells[0].i) ||
-          selectedCells.every(cell => cell.j == selectedCells[0].j)) &&
-        selectedCells.some(cell => this.isSurrounded(cell))
+        (selectedCells.every(
+          (cell, j, arr) =>
+            (j == 0 || arr[j - 1].j == cell.j - 1) &&
+            cell.i == selectedCells[0].i
+        ) ||
+          selectedCells.every(
+            (cell, i, arr) =>
+              (i == 0 || arr[i - 1].i == cell.i - 1) &&
+              cell.j == selectedCells[0].j
+          )) &&
+        selectedCells.some(cell => this.hasAdjacentCell(cell))
       );
     },
     validate() {
@@ -150,6 +164,8 @@ export default {
           }))
       );
     this.cancel();
+    this.board[7][7].content = "H";
+    this.board[7][7].isLocked = true;
   }
 };
 </script>
