@@ -48,6 +48,9 @@
 
 <script>
 import _ from "lodash";
+
+// import wordsDict from "../assets/words_dictionary.json";
+
 const EMPTY_CELL = " ";
 
 const LETTERS_DESTRIBUTION = {
@@ -222,7 +225,7 @@ export default {
           this.board[cell.i][cell.j + 1].isLocked)
       );
     },
-    isSelectedCellsAligned() {
+    getSelectedCells() {
       var selectedCells = [];
 
       this.applyToBoard(cell => {
@@ -230,12 +233,13 @@ export default {
           selectedCells.push(cell);
         }
       });
-
+      return selectedCells;
+    },
+    isSelectedCellsAligned(selectedCells) {
       return (
         (selectedCells.every(
           (cell, j, arr) =>
-            (j == 0 ||
-              this.board[cell.i][cell.j - 1].content != EMPTY_CELL) &&
+            (j == 0 || this.board[cell.i][cell.j - 1].content != EMPTY_CELL) &&
             cell.i == selectedCells[0].i
         ) ||
           selectedCells.every(
@@ -247,8 +251,10 @@ export default {
         selectedCells.some(cell => this.hasAdjacentCell(cell))
       );
     },
+    getFormedWords(selectedCells) {},
     validate() {
-      let isAligned = this.isSelectedCellsAligned();
+      let selectedCells = this.getSelectedCells();
+      let isAligned = this.isSelectedCellsAligned(selectedCells);
 
       if (isAligned) {
         this.applyToBoard(cell => {
@@ -259,6 +265,7 @@ export default {
               LETTERS_DESTRIBUTION[cell.content].score;
           }
         });
+
         this.nextTurn();
         this.fillHands();
       } else {
@@ -285,7 +292,8 @@ export default {
       });
     },
     onHandClick(playerIndex, i) {
-      if (this.players[playerIndex] != this.currentPlayer) return;
+      if (!this.selectedCell || this.players[playerIndex] != this.currentPlayer)
+        return;
 
       this.selectedCell.content = this.currentPlayer.hand[i];
       this.currentPlayer.hand.splice(i, 1);
