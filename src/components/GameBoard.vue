@@ -285,22 +285,21 @@ export default {
     getFormedWords(selectedCells, direction, board) {
       // Get Direction
       let words = [];
-      // Check vertical for each letter
-      for (let cell of selectedCells) {
-        let word = "";
+      // add the main word
+      let word =
+        direction == "horizontal"
+          ? this._getHorizontalWord(selectedCells[0], board)
+          : this._getVerticalWord(selectedCells[0], board);
+      if (word.length > 1) words.push(word);
 
+      // Add other words
+      for (let cell of selectedCells) {
         word =
           direction == "horizontal"
             ? this._getVerticalWord(cell, board)
             : this._getHorizontalWord(cell, board);
         if (word.length > 1) words.push(word);
       }
-      // add the horizontal once
-      let word =
-        direction == "horizontal"
-          ? this._getHorizontalWord(selectedCells[0], board)
-          : this._getVerticalWord(selectedCells[0], board);
-      if (word.length > 1) words.push(word);
 
       return words;
     },
@@ -355,6 +354,8 @@ export default {
       if (!this.selectedCell || this.players[playerIndex] != this.currentPlayer)
         return;
 
+      if (this.selectedCell.content != EMPTY_CELL)
+        this.currentPlayer.hand.push(this.selectedCell.content);
       this.selectedCell.content = this.currentPlayer.hand[i];
       this.currentPlayer.hand.splice(i, 1);
       // this.selectedCell.selected = false
@@ -408,7 +409,7 @@ export default {
     this.generateLettersDeck();
     this.fillHands();
     this.cancel();
-    this.board[7][7].content = "H";
+    this.board[7][7].content = this.lettersDeck.pop();
     this.board[7][7].isLocked = true;
   }
 };
