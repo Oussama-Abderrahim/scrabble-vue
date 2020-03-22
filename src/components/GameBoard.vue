@@ -49,7 +49,7 @@
 <script>
 import _ from "lodash";
 
-// import wordsDict from "../assets/words_dictionary.json";
+import wordsDict from "../assets/words_dictionary.json";
 
 const EMPTY_CELL = " ";
 
@@ -235,35 +235,96 @@ export default {
       });
       return selectedCells;
     },
-    isSelectedCellsAligned(selectedCells) {
-      return (
-        (selectedCells.every(
-          (cell, j, arr) =>
-            (j == 0 || this.board[cell.i][cell.j - 1].content != EMPTY_CELL) &&
-            cell.i == selectedCells[0].i
-        ) ||
-          selectedCells.every(
-            (cell, i, arr) =>
-              (i == 0 ||
-                this.board[cell.i - 1][cell.j].content != EMPTY_CELL) &&
-              cell.j == selectedCells[0].j
-          )) &&
-        selectedCells.some(cell => this.hasAdjacentCell(cell))
-      );
+    getSelectedCellsAlignement(selectedCells) {
+      if (!selectedCells.some(cell => this.hasAdjacentCell(cell))) return false;
+
+      const isHorizontal = (cell, j) =>
+        (j == 0 || this.board[cell.i][cell.j - 1].content != EMPTY_CELL) &&
+        cell.i == selectedCells[0].i;
+
+      const isVertical = (cell, i) =>
+        (i == 0 || this.board[cell.i - 1][cell.j].content != EMPTY_CELL) &&
+        cell.j == selectedCells[0].j;
+
+      return selectedCells.every(isHorizontal)
+        ? "horizontal"
+        : selectedCells.every(isVertical)
+        ? "vertical"
+        : false;
     },
-    getFormedWords(selectedCells) {},
+    _getVerticalWord(cell, board) {
+      // move all way up
+      const j = cell.j;
+      let i = cell.i;
+      let word = "";
+      while (i > 0 && board[i][j].content != EMPTY_CELL) i--;
+      // move back down
+      i++;
+      while (i < board.length && board[i][j].content != EMPTY_CELL) {
+        word += board[i][j].content;
+        i++;
+      }
+
+      return word;
+    },
+    _getHorizontalWord(cell, board) {
+      // move all way left
+      const i = cell.i;
+      let j = cell.j;
+      let word = "";
+      while (j > 0 && board[i][j].content != EMPTY_CELL) j--;
+      // move back right
+      j++;
+      while (j < board[i].length && board[i][j].content != EMPTY_CELL) {
+        word += board[i][j].content;
+        j++;
+      }
+
+      return word;
+    },
+    getFormedWords(selectedCells, direction, board) {
+      // Get Direction
+      let words = [];
+      if (direction == "horizontal") {
+        // Check vertical for each letter
+        for (let cell of selectedCells) {
+          let word = this._getVerticalWord(cell, board);
+          if (word.length > 1) words.push(word);
+        }
+        // add the horizontal once
+        let word = this._getHorizontalWord(selectedCells[0], board);
+        if (word.length > 1) words.push(word);
+      } else {
+        // Check horizontal for each letter
+        for (let cell of selectedCells) {
+          let word = this._getHorizontalWord(cell, board);
+          if (word.length > 1) words.push(word);
+        }
+        // add the vertical once
+        let word = this._getVerticalWord(selectedCells[0], board);
+        if (word.length > 1) words.push(word);
+      }
+
+      return words;
+    },
     validate() {
       let selectedCells = this.getSelectedCells();
-      let isAligned = this.isSelectedCellsAligned(selectedCells);
+      let direction = this.getSelectedCellsAlignement(selectedCells);
+      let isAligned = direction == "horizontal" || direction == "vertical";
+      let words = this.getFormedWords(selectedCells, direction, this.board);
 
-      if (isAligned) {
+      let isWordValid = words.every(word => !!wordsDict[word.toLowerCase()]);
+
+      if (isAligned && isWordValid) {
         this.applyToBoard(cell => {
           if (cell.selected && cell.content != EMPTY_CELL) {
             cell.isLocked = true;
             cell.selected = false;
-            this.currentPlayer.score +=
-              LETTERS_DESTRIBUTION[cell.content].score;
           }
+
+          for (let word of words)
+            for (let letter of word)
+              this.currentPlayer.score += LETTERS_DESTRIBUTION[letter].score;
         });
 
         this.nextTurn();
