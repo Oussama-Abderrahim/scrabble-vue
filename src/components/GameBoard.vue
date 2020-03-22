@@ -285,25 +285,22 @@ export default {
     getFormedWords(selectedCells, direction, board) {
       // Get Direction
       let words = [];
-      if (direction == "horizontal") {
-        // Check vertical for each letter
-        for (let cell of selectedCells) {
-          let word = this._getVerticalWord(cell, board);
-          if (word.length > 1) words.push(word);
-        }
-        // add the horizontal once
-        let word = this._getHorizontalWord(selectedCells[0], board);
-        if (word.length > 1) words.push(word);
-      } else {
-        // Check horizontal for each letter
-        for (let cell of selectedCells) {
-          let word = this._getHorizontalWord(cell, board);
-          if (word.length > 1) words.push(word);
-        }
-        // add the vertical once
-        let word = this._getVerticalWord(selectedCells[0], board);
+      // Check vertical for each letter
+      for (let cell of selectedCells) {
+        let word = "";
+
+        word =
+          direction == "horizontal"
+            ? this._getVerticalWord(cell, board)
+            : this._getHorizontalWord(cell, board);
         if (word.length > 1) words.push(word);
       }
+      // add the horizontal once
+      let word =
+        direction == "horizontal"
+          ? this._getHorizontalWord(selectedCells[0], board)
+          : this._getVerticalWord(selectedCells[0], board);
+      if (word.length > 1) words.push(word);
 
       return words;
     },
@@ -311,21 +308,23 @@ export default {
       let selectedCells = this.getSelectedCells();
       let direction = this.getSelectedCellsAlignement(selectedCells);
       let isAligned = direction == "horizontal" || direction == "vertical";
-      let words = this.getFormedWords(selectedCells, direction, this.board);
+      let words = isAligned
+        ? this.getFormedWords(selectedCells, direction, this.board)
+        : [];
 
       let isWordValid = words.every(word => !!wordsDict[word.toLowerCase()]);
 
+      console.log(direction, isAligned, words);
       if (isAligned && isWordValid) {
         this.applyToBoard(cell => {
           if (cell.selected && cell.content != EMPTY_CELL) {
             cell.isLocked = true;
             cell.selected = false;
           }
-
-          for (let word of words)
-            for (let letter of word)
-              this.currentPlayer.score += LETTERS_DESTRIBUTION[letter].score;
         });
+        for (let word of words)
+          for (let letter of word)
+            this.currentPlayer.score += LETTERS_DESTRIBUTION[letter].score;
 
         this.nextTurn();
         this.fillHands();
