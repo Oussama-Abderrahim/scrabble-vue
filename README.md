@@ -1,4 +1,8 @@
-# scrabble
+# Scrabble
+
+A small Scrabble game made with VueJs for practice... and fun.
+
+See built version here [https://sakasaky.github.io/scrabble-vue/](https://sakasaky.github.io/scrabble-vue/)
 
 ## Project setup
 ```
