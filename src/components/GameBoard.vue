@@ -1,5 +1,16 @@
 <template>
-  <div class="container">
+  <div v-if="loading" id="loader" class="d-flex justify-content-center loader">
+    <div class="loader-dots">
+      <div class="loader-dots-dot dot1"></div>
+      <div class="loader-dots-dot dot2"></div>
+      <div class="loader-dots-dot dot3"></div>
+    </div>
+    <div class="loader-text">
+      <h5>Loading dictionnary...</h5>
+    </div>
+  </div>
+
+  <div v-else class="container">
     <div class="score-row">
       <h1>SCRABBLE</h1>
       <h3>{{currentPlayer.name}}'s turn</h3>
@@ -48,8 +59,6 @@
 
 <script>
 import _ from "lodash";
-
-import wordsDict from "../assets/words_dictionary.json";
 
 const EMPTY_CELL = " ";
 
@@ -189,6 +198,7 @@ const LETTERS_DESTRIBUTION = {
 export default {
   name: "GameBoard",
   data: () => ({
+    loading: true,
     board: [],
     lettersDeck: [],
     waiting: false,
@@ -204,6 +214,7 @@ export default {
         score: 0
       }
     ],
+    wordsDict: [],
     currentPlayer: null,
     selectedCell: null
   }),
@@ -311,7 +322,9 @@ export default {
         ? this.getFormedWords(selectedCells, direction, this.board)
         : [];
 
-      let isWordValid = words.every(word => !!wordsDict[word.toLowerCase()]);
+      let isWordValid = words.every(
+        word => !!this.wordsDict[word.toLowerCase()]
+      );
 
       console.log(direction, isAligned, words);
       if (isAligned && isWordValid) {
@@ -404,6 +417,7 @@ export default {
     }
   },
   beforeMount() {
+    this.loading = true;
     this.currentPlayer = this.players[0];
     this.initGameBoard();
     this.generateLettersDeck();
@@ -411,6 +425,14 @@ export default {
     this.cancel();
     this.board[7][7].content = this.lettersDeck.pop();
     this.board[7][7].isLocked = true;
+
+    fetch(`words_dictionary.json`)
+      .then(res => res.json())
+      .then(res => {
+        console.log(res);
+        this.wordsDict = res;
+        this.loading = false;
+      });
   }
 };
 </script>
@@ -487,6 +509,80 @@ $cell-size: 24px;
       margin: 0px;
       border: 2px solid red;
     }
+  }
+}
+/* LOADER */
+.loader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  height: 100vh;
+  text-align: center;
+  width: 100vw;
+  background-color: #fff;
+  padding-top: 20px;
+
+  &-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    -webkit-transform: translateX(-50%) translateY(-50%);
+    transform: translateX(-50%) translateY(-50%);
+  }
+
+  &-dots {
+    width: 100px;
+    height: 23.3333333333px;
+    position: absolute;
+    top: 40%;
+    left: 50%;
+    -webkit-transform: translateX(-50%) translateY(-50%);
+    transform: translateX(-50%) translateY(-50%);
+  }
+
+  &-dots-dot {
+    will-change: transform;
+    height: 23.3333333333px;
+    width: 23.3333333333px;
+    border-radius: 50%;
+    background-color: lightBlue;
+    position: absolute;
+    -webkit-animation: grow 1s ease-in-out infinite alternate;
+    animation: grow 1s ease-in-out infinite alternate;
+
+    &.dot1 {
+      left: 0;
+      -webkit-transform-origin: 100% 50%;
+      transform-origin: 100% 50%;
+    }
+    &.dot2 {
+      left: 50%;
+      -webkit-transform: translateX(-50%) scale(1);
+      transform: translateX(-50%) scale(1);
+      -webkit-animation-delay: 0.33s;
+      animation-delay: 0.33s;
+    }
+    &.dot3 {
+      right: 0;
+      -webkit-animation-delay: 0.66s;
+      animation-delay: 0.66s;
+    }
+  }
+}
+
+@-webkit-keyframes grow {
+  to {
+    -webkit-transform: translateX(-50%) scale(0);
+    transform: translateX(-50%) scale(0);
+  }
+}
+
+@keyframes grow {
+  to {
+    -webkit-transform: translateX(-50%) scale(0);
+    transform: translateX(-50%) scale(0);
   }
 }
 </style>

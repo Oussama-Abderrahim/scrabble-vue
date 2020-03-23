@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build"
+    "build": "vue-cli-service build",
+    "deploy": "cd dist && git init && git add . && git commit -m \"Deploy\" && git checkout -b gh-pages && git push -f https://github.com/Sakasaky/scrabble-vue.git gh-pages"
   },
   "dependencies": {
     "lodash": "^4.17.15",
