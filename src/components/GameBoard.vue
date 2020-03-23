@@ -33,8 +33,14 @@
           <div
             class="cell"
             @click="onBoardClick(i, j)"
-            v-for="(col, j) in board[i]"
-            :class="{'selected': col.selected, 'locked': col.isLocked}"
+            v-for="(cell, j) in board[i]"
+            :class="{
+              'selected': cell.selected,
+              'locked': cell.isLocked,
+              'triple-word': cell.effect==EFFECTS.TRIPLE_WORD,
+              'triple-letter': cell.effect==EFFECTS.TRIPLE_LETTER,
+              'double-word': cell.effect==EFFECTS.DOUBLE_WORD,
+              'double-letter': cell.effect==EFFECTS.DOUBLE_LETTER}"
             :key="i*15+j"
           >{{board[i][j].content}}</div>
         </div>
@@ -61,6 +67,31 @@
 import _ from "lodash";
 
 const EMPTY_CELL = " ";
+
+const W3 = 4,
+  L3 = 3,
+  W2 = 2,
+  L2 = 1,
+  SS = 5,
+  N0 = 0;
+
+const BOARD_SPECIAL_CASES = [
+  [W3, N0, N0, L2, N0, N0, N0, W3, N0, N0, N0, L2, N0, N0, W3],
+  [N0, W2, N0, N0, N0, L3, N0, N0, N0, L3, N0, N0, N0, W2, N0],
+  [N0, N0, W2, N0, N0, N0, W2, N0, W2, N0, N0, N0, W2, N0, N0],
+  [L2, N0, N0, W2, N0, N0, N0, W2, N0, N0, N0, W2, N0, N0, N0],
+  [N0, N0, N0, N0, W2, N0, N0, N0, N0, N0, W2, N0, N0, N0, N0],
+  [N0, L3, N0, N0, N0, L3, N0, N0, N0, L3, N0, N0, N0, N0, N0],
+  [N0, N0, L2, N0, N0, N0, L2, N0, L2, N0, N0, N0, N0, N0, N0],
+  [W3, N0, N0, L2, N0, N0, N0, SS, N0, N0, N0, N0, N0, N0, N0],
+  [N0, N0, L2, N0, N0, N0, L2, N0, L2, N0, N0, N0, N0, N0, N0],
+  [N0, L3, N0, N0, N0, N0, N0, N0, N0, N0, N0, N0, N0, N0, N0],
+  [N0, N0, N0, N0, N0, N0, N0, N0, N0, N0, N0, N0, N0, N0, N0],
+  [N0, N0, N0, N0, N0, N0, N0, N0, N0, N0, N0, N0, N0, N0, N0],
+  [N0, N0, N0, N0, N0, N0, N0, N0, N0, N0, N0, N0, N0, N0, N0],
+  [N0, N0, N0, N0, N0, N0, N0, N0, N0, N0, N0, N0, N0, N0, N0],
+  [N0, N0, N0, N0, N0, N0, N0, N0, N0, N0, N0, N0, N0, N0, N0]
+];
 
 const LETTERS_DESTRIBUTION = {
   A: {
@@ -198,6 +229,12 @@ const LETTERS_DESTRIBUTION = {
 export default {
   name: "GameBoard",
   data: () => ({
+    EFFECTS: {
+      DOUBLE_LETTER: L2,
+      DOUBLE_WORD: W2,
+      TRIPLE_LETTER: L3,
+      TRIPLE_WORD: W3
+    },
     loading: true,
     board: [],
     lettersDeck: [],
@@ -334,15 +371,19 @@ export default {
             cell.selected = false;
           }
         });
-        for (let word of words)
-          for (let letter of word)
-            this.currentPlayer.score += LETTERS_DESTRIBUTION[letter].score;
+
+        this.computeScore();
 
         this.nextTurn();
         this.fillHands();
       } else {
         this.cancel();
       }
+    },
+    computeScore(selectedCells) {
+      for (let word of words)
+        for (let letter of word)
+          this.currentPlayer.score += LETTERS_DESTRIBUTION[letter].score;
     },
     nextTurn() {
       this.currentPlayer =
@@ -384,6 +425,14 @@ export default {
       this.waiting = true;
     },
     initGameBoard() {
+      const getSpecialCaseValue = (i, j) => {
+        const key =
+          Object.keys(this.EFFECTS).find(
+            key => this.EFFECTS[key] == BOARD_SPECIAL_CASES[i][j]
+          ) || null;
+        return this.EFFECTS[key];
+      };
+
       this.board = Array(15)
         .fill([])
         .map((row, i) =>
@@ -393,6 +442,7 @@ export default {
               i: i,
               j: j,
               content: EMPTY_CELL,
+              effect: getSpecialCaseValue(i, j),
               isLocked: false,
               selected: false
             }))
@@ -498,6 +548,38 @@ $cell-size: 24px;
     margin: 1px;
     user-select: none;
     cursor: pointer;
+
+    &.double-letter {
+      background-color: cyan;
+      // &::before {
+      //   font-size: 12px;
+      //   content: "L2";
+      // }
+    }
+
+    &.triple-letter {
+      background-color: blue;
+      // &::before {
+      //   font-size: 12px;
+      //   content: "L3";
+      // }
+    }
+
+    &.double-word {
+      background-color: palevioletred;
+      // &::before {
+      //   font-size: 12px;
+      //   content: "W2";
+      // }
+    }
+
+    &.triple-word {
+      background-color: orangered;
+      // &::before {
+      //   font-size: 12px;
+      //   content: "W3";
+      // }
+    }
 
     &.selected {
       background-color: #fff;
