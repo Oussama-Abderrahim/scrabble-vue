@@ -410,7 +410,6 @@ export default {
             break;
         }
       }
-      alert("Got a score of " + score);
       this.currentPlayer.score += score;
     },
     nextTurn() {
@@ -577,16 +576,6 @@ $cell-size: 24px;
     user-select: none;
     cursor: pointer;
 
-    &.selected {
-      border: 3px solid red;
-      margin: 0;
-    }
-
-    &:hover {
-      margin: 1px;
-      border: 2px solid red;
-    }
-
     &.double-letter {
       background-color: rgb(0, 255, 255);
 
@@ -628,6 +617,16 @@ $cell-size: 24px;
       &.selected {
         background-color: rgb(247, 189, 168);
       }
+    }
+
+    &.selected {
+      border: 3px solid red;
+      margin: 0;
+    }
+
+    &:hover {
+      margin: 1px;
+      border: 2px solid red;
     }
 
     &.locked {
