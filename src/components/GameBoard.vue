@@ -25,7 +25,7 @@
             v-for="(letter, i) in players[0].hand"
             :key="i"
             class="cell"
-            :class="{'locked': (currentPlayer != players[0]), 'pending': i == selectedHandIndex}"
+            :class="{'locked': (currentPlayer != players[0]), 'pending': (currentPlayer == players[0]) && i == selectedHandIndex}"
           >{{letter}}</li>
         </ul>
       </div>
@@ -57,7 +57,7 @@
             v-for="(letter, i) in players[1].hand"
             :key="i"
             class="cell"
-            :class="{'locked': (currentPlayer != players[1])}"
+            :class="{'locked': (currentPlayer != players[1]),  'pending': (currentPlayer == players[1]) && i == selectedHandIndex}"
           >{{letter}}</li>
         </ul>
       </div>
@@ -455,7 +455,8 @@ export default {
       if (this.players[playerIndex] != this.currentPlayer) return;
       this.selectedHandIndex = i;
 
-      if (this.selectedBoardCell && this.selectedHandIndex > -1) this.insertLetter();
+      if (this.selectedBoardCell && this.selectedHandIndex > -1)
+        this.insertLetter();
     },
     onBoardClick(i, j) {
       if (this.board[i][j].isLocked) return;
@@ -467,7 +468,8 @@ export default {
       this.selectedBoardCell = this.board[i][j];
       this.selectedBoardCell.selected = true;
 
-      if (this.selectedBoardCell && this.selectedHandIndex > -1) this.insertLetter();
+      if (this.selectedBoardCell && this.selectedHandIndex > -1)
+        this.insertLetter();
     },
     initGameBoard() {
       const getSpecialCaseValue = (i, j) => {
