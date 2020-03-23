@@ -459,17 +459,46 @@ export default {
         this.insertLetter();
     },
     onBoardClick(i, j) {
+      // Prevent click on locked cells
       if (this.board[i][j].isLocked) return;
+
+      // If Letter already set, put back to hand
       if (
         this.selectedBoardCell &&
-        this.selectedBoardCell.content == EMPTY_CELL
-      )
+        this.board[i][j].selected &&
+        this.board[i][j].content != EMPTY_CELL
+      ) {
+        this.currentPlayer.hand.push(this.board[i][j].content);
+        this.board[i][j].content = EMPTY_CELL;
+      }
+
+      // If hand is selected, Insert it
+      if (this.selectedHandIndex > -1) {
+        this.selectedBoardCell = this.board[i][j];
+        this.selectedBoardCell.selected = true;
+
+        this.insertLetter();
+        return;
+      }
+
+      // If a cell is already selected
+      if (this.selectedBoardCell) {
+        // Remove selection from other cells
         this.selectedBoardCell.selected = false;
+
+        // Undo Selection on empty cells
+        if (
+          this.board[i][j] == this.selectedBoardCell &&
+          this.selectedBoardCell.content == EMPTY_CELL
+        ) {
+          this.selectedBoardCell = null;
+          return;
+        }
+      }
+
+      // Select the clicked case
       this.selectedBoardCell = this.board[i][j];
       this.selectedBoardCell.selected = true;
-
-      if (this.selectedBoardCell && this.selectedHandIndex > -1)
-        this.insertLetter();
     },
     initGameBoard() {
       const getSpecialCaseValue = (i, j) => {
