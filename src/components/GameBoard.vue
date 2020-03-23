@@ -25,6 +25,7 @@
             v-for="(letter, i) in players[0].hand"
             :key="i"
             class="cell"
+            :class="{'locked': (currentPlayer != players[0])}"
           >{{letter}}</li>
         </ul>
       </div>
@@ -36,6 +37,7 @@
             v-for="(cell, j) in board[i]"
             :class="{
               'selected': cell.selected,
+              'pending': cell == selectedCell,
               'locked': cell.isLocked,
               'start-cell': cell.effect==EFFECTS.START,
               'triple-word': cell.effect==EFFECTS.TRIPLE_WORD,
@@ -55,6 +57,7 @@
             v-for="(letter, i) in players[1].hand"
             :key="i"
             class="cell"
+            :class="{'locked': (currentPlayer != players[1])}"
           >{{letter}}</li>
         </ul>
       </div>
@@ -636,8 +639,14 @@ $cell-size: 24px;
     }
 
     &.selected {
+      background-color: #fff;
+      margin: 1px;
+    }
+    &.pending {
+      background-color: #fff;
       border: 2px solid red;
-      margin: 1;
+
+      margin: 1px;
     }
 
     &:hover {
