@@ -79,18 +79,18 @@ const BOARD_SPECIAL_CASES = [
   [W3, N0, N0, L2, N0, N0, N0, W3, N0, N0, N0, L2, N0, N0, W3],
   [N0, W2, N0, N0, N0, L3, N0, N0, N0, L3, N0, N0, N0, W2, N0],
   [N0, N0, W2, N0, N0, N0, W2, N0, W2, N0, N0, N0, W2, N0, N0],
-  [L2, N0, N0, W2, N0, N0, N0, W2, N0, N0, N0, W2, N0, N0, N0],
+  [L2, N0, N0, W2, N0, N0, N0, W2, N0, N0, N0, W2, N0, N0, L2],
   [N0, N0, N0, N0, W2, N0, N0, N0, N0, N0, W2, N0, N0, N0, N0],
-  [N0, L3, N0, N0, N0, L3, N0, N0, N0, L3, N0, N0, N0, N0, N0],
-  [N0, N0, L2, N0, N0, N0, L2, N0, L2, N0, N0, N0, N0, N0, N0],
-  [W3, N0, N0, L2, N0, N0, N0, SS, N0, N0, N0, N0, N0, N0, N0],
-  [N0, N0, L2, N0, N0, N0, L2, N0, L2, N0, N0, N0, N0, N0, N0],
-  [N0, L3, N0, N0, N0, N0, N0, N0, N0, N0, N0, N0, N0, N0, N0],
-  [N0, N0, N0, N0, N0, N0, N0, N0, N0, N0, N0, N0, N0, N0, N0],
-  [N0, N0, N0, N0, N0, N0, N0, N0, N0, N0, N0, N0, N0, N0, N0],
-  [N0, N0, N0, N0, N0, N0, N0, N0, N0, N0, N0, N0, N0, N0, N0],
-  [N0, N0, N0, N0, N0, N0, N0, N0, N0, N0, N0, N0, N0, N0, N0],
-  [N0, N0, N0, N0, N0, N0, N0, N0, N0, N0, N0, N0, N0, N0, N0]
+  [N0, L3, N0, N0, N0, L3, N0, N0, N0, L3, N0, N0, N0, L3, N0],
+  [N0, N0, L2, N0, N0, N0, L2, N0, L2, N0, N0, N0, L2, N0, N0],
+  [W3, N0, N0, L2, N0, N0, N0, SS, N0, N0, N0, L2, N0, N0, W3],
+  [N0, N0, L2, N0, N0, N0, L2, N0, L2, N0, N0, N0, L2, N0, N0],
+  [N0, L3, N0, N0, N0, L3, N0, N0, N0, L3, N0, N0, N0, L3, N0],
+  [N0, N0, N0, N0, W2, N0, N0, N0, N0, N0, W2, N0, N0, N0, N0],
+  [L2, N0, N0, W2, N0, N0, N0, W2, N0, N0, N0, W2, N0, N0, L2],
+  [N0, N0, W2, N0, N0, N0, W2, N0, W2, N0, N0, N0, W2, N0, N0],
+  [N0, W2, N0, N0, N0, L3, N0, N0, N0, L3, N0, N0, N0, W2, N0],
+  [W3, N0, N0, L2, N0, N0, N0, W3, N0, N0, N0, L2, N0, N0, W3]
 ];
 
 const LETTERS_DESTRIBUTION = {
@@ -544,13 +544,27 @@ $cell-size: 24px;
     background-color: #2ecc71;
     width: $cell-size;
     font-size: calc(#{$cell-size} + -2px);
-    border: 1px solid $primary-color;
+    border: 2px solid $primary-color;
     margin: 1px;
     user-select: none;
     cursor: pointer;
 
+    &.selected {
+      border: 3px solid red;
+      margin: 0;
+    }
+
+    &:hover {
+      margin: 1px;
+      border: 2px solid red;
+    }
+
     &.double-letter {
-      background-color: cyan;
+      background-color: rgb(0, 255, 255);
+
+      &.selected {
+        background-color: rgb(177, 255, 255);
+      }
       // &::before {
       //   font-size: 12px;
       //   content: "L2";
@@ -558,11 +572,15 @@ $cell-size: 24px;
     }
 
     &.triple-letter {
-      background-color: blue;
+      background-color: rgb(0, 0, 255);
       // &::before {
       //   font-size: 12px;
       //   content: "L3";
       // }
+
+      &.selected {
+        background-color: rgb(43, 100, 253);
+      }
     }
 
     &.double-word {
@@ -574,22 +592,18 @@ $cell-size: 24px;
     }
 
     &.triple-word {
-      background-color: orangered;
+      background-color: rgb(255, 69, 0);
       // &::before {
       //   font-size: 12px;
       //   content: "W3";
       // }
+      &.selected {
+        background-color: rgb(247, 189, 168);
+      }
     }
 
-    &.selected {
-      background-color: #fff;
-    }
     &.locked {
       background-color: grey;
-    }
-    &:hover {
-      margin: 0px;
-      border: 2px solid red;
     }
   }
 }
