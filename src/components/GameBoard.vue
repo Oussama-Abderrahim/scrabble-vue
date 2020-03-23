@@ -37,6 +37,7 @@
             :class="{
               'selected': cell.selected,
               'locked': cell.isLocked,
+              'start-cell': cell.effect==EFFECTS.START,
               'triple-word': cell.effect==EFFECTS.TRIPLE_WORD,
               'triple-letter': cell.effect==EFFECTS.TRIPLE_LETTER,
               'double-word': cell.effect==EFFECTS.DOUBLE_WORD,
@@ -285,7 +286,12 @@ export default {
       return selectedCells;
     },
     getSelectedCellsAlignement(selectedCells) {
-      if (!selectedCells.some(cell => this.hasAdjacentCell(cell))) return false;
+      if (
+        this.board[selectedCells[0].i][selectedCells[0].j].effect !=
+          this.EFFECTS.START &&
+        !selectedCells.some(cell => this.hasAdjacentCell(cell))
+      )
+        return false;
 
       const isHorizontal = (cell, j) =>
         (j == 0 || this.board[cell.i][cell.j - 1].content != EMPTY_CELL) &&
@@ -500,8 +506,8 @@ export default {
     this.generateLettersDeck();
     this.fillHands();
     this.cancel();
-    this.board[7][7].content = this.lettersDeck.pop();
-    this.board[7][7].isLocked = true;
+    // this.board[7][7].content = this.lettersDeck.pop();
+    // this.board[7][7].isLocked = true;
 
     fetch(`words_dictionary.json`)
       .then(res => res.json())
@@ -618,10 +624,20 @@ $cell-size: 24px;
         background-color: rgb(247, 189, 168);
       }
     }
+    &.start-cell {
+      background-color: rgb(255, 30, 0);
+      // &::before {
+      //   font-size: 12px;
+      //   content: "W3";
+      // }
+      &.selected {
+        background-color: rgb(255, 94, 73);
+      }
+    }
 
     &.selected {
-      border: 3px solid red;
-      margin: 0;
+      border: 2px solid red;
+      margin: 1;
     }
 
     &:hover {
