@@ -25,7 +25,7 @@
             v-for="(letter, i) in players[0].hand"
             :key="i"
             class="cell"
-            :class="{'locked': (currentPlayer != players[0])}"
+            :class="{'locked': (currentPlayer != players[0]), 'pending': i == selectedHandIndex}"
           >{{letter}}</li>
         </ul>
       </div>
@@ -37,7 +37,7 @@
             v-for="(cell, j) in board[i]"
             :class="{
               'selected': cell.selected,
-              'pending': cell == selectedCell,
+              'pending': cell == selectedBoardCell,
               'locked': cell.isLocked,
               'start-cell': cell.effect==EFFECTS.START,
               'triple-word': cell.effect==EFFECTS.TRIPLE_WORD,
@@ -258,7 +258,8 @@ export default {
     ],
     wordsDict: [],
     currentPlayer: null,
-    selectedCell: null
+    selectedBoardCell: null,
+    selectedHandIndex: -1
   }),
   methods: {
     applyToBoard(f) {
@@ -428,7 +429,7 @@ export default {
           : this.players[0];
     },
     cancel() {
-      this.selectedCell = null;
+      this.selectedBoardCell = null;
       this.waiting = false;
       // Reset Board
       this.applyToBoard(cell => {
@@ -440,25 +441,33 @@ export default {
         cell.selected = false;
       });
     },
+    insertLetter() {
+      if (this.selectedBoardCell.content != EMPTY_CELL)
+        this.currentPlayer.hand.push(this.selectedBoardCell.content);
+      this.selectedBoardCell.content = this.currentPlayer.hand[
+        this.selectedHandIndex
+      ];
+      this.currentPlayer.hand.splice(this.selectedHandIndex, 1);
+      this.selectedBoardCell = null;
+      this.selectedHandIndex = -1;
+    },
     onHandClick(playerIndex, i) {
-      if (!this.selectedCell || this.players[playerIndex] != this.currentPlayer)
-        return;
+      if (this.players[playerIndex] != this.currentPlayer) return;
+      this.selectedHandIndex = i;
 
-      if (this.selectedCell.content != EMPTY_CELL)
-        this.currentPlayer.hand.push(this.selectedCell.content);
-      this.selectedCell.content = this.currentPlayer.hand[i];
-      this.currentPlayer.hand.splice(i, 1);
-      // this.selectedCell.selected = false
-      this.selectedCell = null;
-      this.waiting = false;
+      if (this.selectedBoardCell && this.selectedHandIndex > -1) this.insertLetter();
     },
     onBoardClick(i, j) {
       if (this.board[i][j].isLocked) return;
-      if (this.selectedCell && this.selectedCell.content == EMPTY_CELL)
-        this.selectedCell.selected = false;
-      this.selectedCell = this.board[i][j];
-      this.selectedCell.selected = true;
-      this.waiting = true;
+      if (
+        this.selectedBoardCell &&
+        this.selectedBoardCell.content == EMPTY_CELL
+      )
+        this.selectedBoardCell.selected = false;
+      this.selectedBoardCell = this.board[i][j];
+      this.selectedBoardCell.selected = true;
+
+      if (this.selectedBoardCell && this.selectedHandIndex > -1) this.insertLetter();
     },
     initGameBoard() {
       const getSpecialCaseValue = (i, j) => {
