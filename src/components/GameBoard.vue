@@ -233,7 +233,8 @@ export default {
       DOUBLE_LETTER: L2,
       DOUBLE_WORD: W2,
       TRIPLE_LETTER: L3,
-      TRIPLE_WORD: W3
+      TRIPLE_WORD: W3,
+      START: SS
     },
     loading: true,
     board: [],
@@ -372,7 +373,7 @@ export default {
           }
         });
 
-        this.computeScore();
+        this.computeScore(words, selectedCells);
 
         this.nextTurn();
         this.fillHands();
@@ -380,10 +381,37 @@ export default {
         this.cancel();
       }
     },
-    computeScore(selectedCells) {
+    computeScore(words, selectedCells) {
+      let score = 0;
       for (let word of words)
-        for (let letter of word)
-          this.currentPlayer.score += LETTERS_DESTRIBUTION[letter].score;
+        for (let letter of word) score += LETTERS_DESTRIBUTION[letter].score;
+
+      // Apply letter effects
+      for (let cell of selectedCells) {
+        switch (cell.effect) {
+          case this.EFFECTS.DOUBLE_LETTER:
+            score += LETTERS_DESTRIBUTION[cell.content].score;
+            break;
+          case this.EFFECTS.TRIPLE_LETTER:
+            score += LETTERS_DESTRIBUTION[cell.content].score * 2;
+            break;
+        }
+      }
+
+      // Apply Words effects
+      for (let cell of selectedCells) {
+        switch (cell.effect) {
+          case this.EFFECTS.START:
+          case this.EFFECTS.DOUBLE_WORD:
+            score *= 2;
+            break;
+          case this.EFFECTS.TRIPLE_WORD:
+            score *= 3;
+            break;
+        }
+      }
+      alert("Got a score of " + score);
+      this.currentPlayer.score += score;
     },
     nextTurn() {
       this.currentPlayer =
