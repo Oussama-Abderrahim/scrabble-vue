@@ -414,6 +414,7 @@ export default {
           case this.EFFECTS.START:
           case this.EFFECTS.DOUBLE_WORD:
             score += words[0]
+              .split("")
               .map(letter => LETTERS_DESTRIBUTION[letter].score)
               .reduce((p, v) => p + v);
             break;
@@ -421,6 +422,7 @@ export default {
             score +=
               2 *
               words[0]
+                .split("")
                 .map(letter => LETTERS_DESTRIBUTION[letter].score)
                 .reduce((p, v) => p + v);
             break;
