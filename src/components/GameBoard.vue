@@ -413,10 +413,16 @@ export default {
         switch (cell.effect) {
           case this.EFFECTS.START:
           case this.EFFECTS.DOUBLE_WORD:
-            score *= 2;
+            score += words[0]
+              .map(letter => LETTERS_DESTRIBUTION[letter].score)
+              .reduce((p, v) => p + v);
             break;
           case this.EFFECTS.TRIPLE_WORD:
-            score *= 3;
+            score +=
+              2 *
+              words[0]
+                .map(letter => LETTERS_DESTRIBUTION[letter].score)
+                .reduce((p, v) => p + v);
             break;
         }
       }
